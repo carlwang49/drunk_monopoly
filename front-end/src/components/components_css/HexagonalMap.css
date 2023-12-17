@@ -1,0 +1,36 @@
+.hexagonal-map {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 移除高度限制，使地图自适应 */
+    width: 1200px; /* 宽度为新大小 */
+    height: auto;
+  }
+  
+.hexagon {
+fill: #4caf50;
+stroke: #ffffff;
+stroke-width: 3;
+}
+
+/* 特定類型的六邊形 */
+.hexagon.start {
+fill: #ffeb3b;
+}
+.hexagon.fate {
+fill: #f44336;
+}
+.hexagon.quiz {
+fill: #2196f3;
+}
+.hexagon.rest {
+fill: #9e9e9e;
+}
+  
+.hexagonal-map svg {
+    transform: scale(0.8); /* Adjust the scale value as needed */
+    transform-origin: center;
+}
+
+
+
