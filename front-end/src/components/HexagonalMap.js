@@ -30,6 +30,7 @@ function HexagonalMap({ players }) {
             player={player}
             hexSize={hexSize}
             index={index}
+            totalPlayers={players.length}
           />
         ))}
       </svg>
