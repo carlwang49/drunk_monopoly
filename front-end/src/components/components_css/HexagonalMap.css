@@ -8,9 +8,9 @@
   }
   
 .hexagon {
-fill: #4caf50;
-stroke: #ffffff;
-stroke-width: 3;
+  fill: rgba(142, 145, 143, 0.8); /* 調整 0.8 來達到想要的透明效果 */
+  stroke: #ffffff;
+  stroke-width: 2;
 }
 
 /* 特定類型的六邊形 */
@@ -29,7 +29,9 @@ fill: #9e9e9e;
   
 .hexagonal-map svg {
     transform: scale(0.8); /* Adjust the scale value as needed */
-    transform-origin: center;
+    transform-origin: left;
+    position: relative;
+    top: -90px; /* 将SVG向上移动10像素 */
 }
 
 

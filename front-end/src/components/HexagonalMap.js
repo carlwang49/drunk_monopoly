@@ -2,13 +2,13 @@ import React from 'react';
 import './components_css/HexagonalMap.css';
 
 function HexagonalMap() {
-  const hexagons = generateHexagonalGrid(5); // Radius of the large hexagon is 5
+  const hexagons = generateHexagonalGrid(6); // Radius of the large hexagon is 5
   
 
   // Calculate the total width and height based on the hexagon size
   const hexSize = Math.min((window.innerWidth * 0.9) / 11 / Math.sqrt(3), (window.innerHeight * 0.9) / 9 / 2);
-  const totalWidth = Math.sqrt(3) * hexSize * 11; // Approximate width for 5 hexes + gaps
-  const totalHeight = 2 * hexSize * 9; // Approximate height for 5 hexes + gaps
+  const totalWidth = Math.sqrt(3) * hexSize * 11 * 1.2; // Approximate width for 5 hexes + gaps
+  const totalHeight = 2 * hexSize * 9 * 1.2; // Approximate height for 5 hexes + gaps
 
   return (
     <div className="hexagonal-map">
