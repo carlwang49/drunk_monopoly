@@ -20,9 +20,27 @@ function HexagonalMap({ players }) {
           totalHeight / 2
         } ${totalWidth} ${totalHeight}`}
       >
-        {hexagons.map((hex, i) => (
-          <Hexagon key={i} q={hex.q} r={hex.r} size={hexSize} />
-        ))}
+        {hexagons.map((hex, i) => {
+          // Calculate x and y here
+          const x = hexSize * Math.sqrt(3) * (hex.q + hex.r / 2);
+          const y = ((hexSize * 3) / 2) * hex.r;
+
+          return (
+            <React.Fragment key={i}>
+              <Hexagon q={hex.q} r={hex.r} size={hexSize} />
+              {hex.q === 0 && hex.r === 6 && (
+                <g transform={`translate(${x}, ${y})`}>
+                  {/* Display "GO" in the center of the hexagon */}
+                  <text textAnchor="middle" dy=".4em" className="go-text">
+                    GO
+                  </text>
+                  {/* Display a longer arrow pointing to the right-up direction */}
+                  <LongArrow />
+                </g>
+              )}
+            </React.Fragment>
+          );
+        })}
 
         {players.map((player, index) => (
           <PlayerToken
@@ -35,6 +53,16 @@ function HexagonalMap({ players }) {
         ))}
       </svg>
     </div>
+  );
+}
+
+function LongArrow() {
+  // 调整箭头大小和方向
+  const points = "0,-20 10,0 0,20"; // 这将创建一个更长的箭头
+  const transform = "rotate(-60) translate(23, 0)"; // 调整箭头的平移，使其不与"GO"重叠
+
+  return (
+    <polygon points={points} transform={transform} className="arrow" />
   );
 }
 
