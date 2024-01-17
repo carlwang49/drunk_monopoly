@@ -2,7 +2,8 @@ import React from "react";
 import PlayerToken from "./PlayerToken";
 import "./components_css/HexagonalMap.css";
 
-function HexagonalMap({ players }) {
+function HexagonalMap({ players, landStatus }) {
+  console.log("Players:", players);
   const hexagons = generateHexagonalGrid(6); // Radius of the large hexagon is 6
   console.log(hexagons);
   // Calculate the total width and height based on the hexagon size
@@ -24,10 +25,20 @@ function HexagonalMap({ players }) {
           // Calculate x and y here
           const x = hexSize * Math.sqrt(3) * (hex.q + hex.r / 2);
           const y = ((hexSize * 3) / 2) * hex.r;
+          
+          const landKey = `${hex.q},${hex.r}`;
+          const land = landStatus[landKey];
+          const fillColor = land?.owner ? players.find(p => p.id === land.owner).color : "white";
+          const wineCount = land?.wine || 0;
 
           return (
             <React.Fragment key={i}>
-              <Hexagon q={hex.q} r={hex.r} size={hexSize} />
+              <Hexagon q={hex.q} r={hex.r} size={hexSize} fillColor={fillColor} />
+              {wineCount > 0 && (
+                <text /* ... */>
+                  {`${wineCount}杯`}
+                </text>
+              )}
               {hex.q === 0 && hex.r === 6 && (
                 <g transform={`translate(${x}, ${y})`}>
                   {/* Display "GO" in the center of the hexagon */}
