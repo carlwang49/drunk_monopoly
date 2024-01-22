@@ -1,11 +1,10 @@
-import React from "react";
+import React from 'react';
 import PlayerToken from "./PlayerToken";
 import "./components_css/HexagonalMap.css";
+import Tooltip from '@mui/material/Tooltip';
 
 function HexagonalMap({ players, landStatus }) {
-  console.log("Players:", players);
   const hexagons = generateHexagonalGrid(6); // Radius of the large hexagon is 6
-  console.log(hexagons);
   // Calculate the total width and height based on the hexagon size
   const hexSize = Math.min(
     (window.innerWidth * 0.9) / 11 / Math.sqrt(3),
@@ -13,43 +12,70 @@ function HexagonalMap({ players, landStatus }) {
   );
   const totalWidth = Math.sqrt(3) * hexSize * 11 * 1.2; // Approximate width for 5 hexes + gaps
   const totalHeight = 2 * hexSize * 9 * 1.2; // Approximate height for 5 hexes + gaps
+  const colors = [
+    'rgba(255, 0, 0, 0.5)',    // 半透明的红色
+    'rgba(0, 255, 0, 0.5)',    // 半透明的绿色
+    'rgba(0, 0, 255, 0.5)',    // 半透明的蓝色
+    'rgba(255, 255, 0, 0.5)',  // 半透明的黄色
+    'rgba(128, 0, 128, 0.5)',  // 半透明的紫色
+    'rgba(255, 165, 0, 0.5)'   // 半透明的橙色
+  ];
+
+
+  // Function to get tooltip content for a land
+  const getTooltipContent = (landKey) => {
+    const land = landStatus[landKey];
+    if (!land) {
+      return `Unclaimed Land, Coordinates: ${landKey}`;
+    }
+    return `Team:${land.owner}, Wine: ${land.wine}, Coordinates: ${landKey}`;
+  };
 
   return (
     <div className="hexagonal-map">
       <svg
-        viewBox={`-${totalWidth / 2} -${
-          totalHeight / 2
-        } ${totalWidth} ${totalHeight}`}
+        viewBox={`-${totalWidth / 2} -${totalHeight / 2} ${totalWidth} ${totalHeight}`}
       >
         {hexagons.map((hex, i) => {
-          // Calculate x and y here
           const x = hexSize * Math.sqrt(3) * (hex.q + hex.r / 2);
           const y = ((hexSize * 3) / 2) * hex.r;
-          
           const landKey = `${hex.q},${hex.r}`;
           const land = landStatus[landKey];
-          const fillColor = land?.owner ? players.find(p => p.id === land.owner).color : "white";
+          const fillColor = land?.owner 
+            ? colors[(players.find(p => p.id === land.owner)?.id - 1) % colors.length]
+            : "rgba(142, 145, 143, 0.8)";
           const wineCount = land?.wine || 0;
-
+  
           return (
-            <React.Fragment key={i}>
-              <Hexagon q={hex.q} r={hex.r} size={hexSize} fillColor={fillColor} />
-              {wineCount > 0 && (
-                <text /* ... */>
-                  {`${wineCount}杯`}
-                </text>
-              )}
-              {hex.q === 0 && hex.r === 6 && (
-                <g transform={`translate(${x}, ${y})`}>
-                  {/* Display "GO" in the center of the hexagon */}
-                  <text textAnchor="middle" dy=".4em" className="go-text">
-                    GO
+            <Tooltip key={i} title={getTooltipContent(landKey)} arrow>
+              <g>
+                <Hexagon
+                  q={hex.q}
+                  r={hex.r}
+                  size={hexSize}
+                  fillColor={fillColor}
+                />
+                {wineCount > 0 && (
+                  <text 
+                    x={x} 
+                    y={y} 
+                    textAnchor="middle" 
+                    dy=".3em" 
+                    style={{ fill: 'black', fontSize: '30px', fontWeight: 'bold' }}
+                  >
+                    {wineCount}
                   </text>
-                  {/* Display a longer arrow pointing to the right-up direction */}
-                  <LongArrow />
-                </g>
-              )}
-            </React.Fragment>
+                )}
+                {hex.q === 0 && hex.r === 6 && (
+                  <g transform={`translate(${x}, ${y})`}>
+                    <text textAnchor="middle" dy=".4em" className="go-text">
+                      GO
+                    </text>
+                    <LongArrow />
+                  </g>
+                )}
+              </g>
+            </Tooltip>
           );
         })}
 
@@ -79,7 +105,7 @@ function LongArrow() {
 
 export default HexagonalMap;
 
-function Hexagon({ q, r, size }) {
+function Hexagon({ q, r, size, fillColor}) {
   // Convert axial to pixel coordinates
   const x = size * Math.sqrt(3) * (q + r / 2);
   const y = ((size * 3) / 2) * r;
@@ -97,10 +123,12 @@ function Hexagon({ q, r, size }) {
   return (
     <polygon
       points={hexPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+      style={{ fill: fillColor }}
       className="hexagon"
     />
   );
 }
+
 
 /**
  * Function to generate a hexagonal grid

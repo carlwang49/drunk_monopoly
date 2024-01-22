@@ -34,5 +34,16 @@ fill: #9e9e9e;
     top: -90px; /* 将SVG向上移动10像素 */
 }
 
+.land-info {
+  position: absolute;
+  top: 10px; /* 根据需要调整 */
+  left: 10px; /* 根据需要调整 */
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 
 

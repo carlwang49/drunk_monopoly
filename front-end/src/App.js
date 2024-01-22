@@ -4,9 +4,13 @@ import HexagonalMap from "./components/HexagonalMap";
 import Dice from "react-dice-roll";
 import Scoreboard from "./components/Scoreboard";
 import { HEX_PATH } from './constants';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+
 
 function App() {
+  
   const initialPlayers = [{ id: 1, name: "Team 1", position: { q: 0, r: 6 }, money: 1500 }];
+  const [purchasingPlayerId, setPurchasingPlayerId] = useState(null);
 
   const [players, setPlayers] = useState(() => {
     const storedPlayers = localStorage.getItem("players");
@@ -17,12 +21,52 @@ function App() {
     const storedTurn = localStorage.getItem("currentTurn");
     return storedTurn ? parseInt(storedTurn, 10) : 0;
   });
-  const [landStatus, setLandStatus] = useState({}); // 新增用於保存土地狀態的 state
+
+  const [landStatus, setLandStatus] = useState(() => {
+    const storedLandStatus = localStorage.getItem("landStatus");
+    return storedLandStatus ? JSON.parse(storedLandStatus) : {};
+  });
+  
+  const [openDialog, setOpenDialog] = useState(false);  
+  const [selectedHex, setSelectedHex] = useState(null);
+
+  const handleLandPurchase = (hex) => {
+    const landKey = `${hex.q},${hex.r}`;
+    const currentLand = landStatus[landKey];
+    const currentPlayerId = players[currentTurn].id; // Get current player ID based on turn
+    console.log("currentPlayerId", currentPlayerId)
+    if (currentLand && currentLand.owner !== currentPlayerId) {
+      alert(`你踩到了 ${players.find(p => p.id === currentLand.owner).name} 的土地，罚 ${currentLand.wine} 杯酒！`);
+    } else {
+      setSelectedHex(hex);
+      setOpenDialog(true);
+    }
+  };
+  
+  const handlePurchaseOption = (option) => {
+    const drinks = ["不喝", "喝一杯", "喝兩杯", "喝三杯"].indexOf(option);
+    if (drinks > 0 && selectedHex) {
+      const landKey = `${selectedHex.q},${selectedHex.r}`;
+      const currentLand = landStatus[landKey] || {};
+      const newLandStatus = {
+        ...landStatus,
+        [landKey]: {
+          owner: purchasingPlayerId, // 使用保存的玩家 ID
+          wine: (currentLand.wine || 0) + drinks,
+        },
+      };
+      setLandStatus(newLandStatus);
+    }
+    setOpenDialog(false);
+  };
+  
 
   useEffect(() => {
     localStorage.setItem("players", JSON.stringify(players));
     localStorage.setItem("currentTurn", currentTurn.toString());
-  }, [players, currentTurn]);
+    localStorage.setItem("landStatus", JSON.stringify(landStatus));
+  }, [players, currentTurn, landStatus]);
+  
 
   const addPlayer = () => {
     const newId = players.length + 1;
@@ -36,30 +80,13 @@ function App() {
     }
   };
 
-  const handleLandPurchase = (hex) => {
-    const landKey = `${hex.q},${hex.r}`;
-    const currentLand = landStatus[landKey] || {};
-  
-    const drinkOptions = ["不喝", "喝一杯", "喝兩杯", "喝三杯"];
-    const choice = window.prompt(`選擇購買選項：\n${drinkOptions.join("\n")}`);
-    if (drinkOptions.includes(choice)) {
-      const drinks = drinkOptions.indexOf(choice);
-      if (drinks > 0) { // 确保至少喝了一杯才更新状态
-        const newLandStatus = {
-          ...landStatus,
-          [landKey]: {
-            owner: players[currentTurn].id,
-            wine: (currentLand.wine || 0) + drinks,
-          },
-        };
-        setLandStatus(newLandStatus);
-      }
-    }
-  };
-  
 
   const handleDiceRoll = (value) => {
     const playerToMove = players[currentTurn];
+    setPurchasingPlayerId((prevId) => {
+      return playerToMove.id;
+    });
+
     const currentIndex = HEX_PATH.findIndex(hex => 
       hex.q === playerToMove.position.q && hex.r === playerToMove.position.r
     );
@@ -87,15 +114,32 @@ function App() {
   const resetGame = () => {
     setPlayers(initialPlayers);
     setCurrentTurn(0);
+    setLandStatus({})
   };
 
   return (
     <div className="App">
       <aside className="scoreboard-container">
         <Scoreboard players={players} />
-        <button onClick={addPlayer}>Add Player</button>
-        <button onClick={removePlayer}>Remove Player</button>
-        <button onClick={resetGame}>Reset Game</button>
+        <Button variant="contained" onClick={addPlayer}>Add Player</Button>
+        <Button variant="contained" onClick={removePlayer}>Remove Player</Button>
+        <Button variant="contained" onClick={resetGame}>Reset Game</Button>
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle>購買土地</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              您的選擇是：
+            </DialogContentText>
+            {["不喝", "喝一杯", "喝兩杯", "喝三杯"].map((option, index) => (
+              <Button key={index} onClick={() => handlePurchaseOption(option)}>
+                {option}
+              </Button>
+            ))}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)}>取消</Button>
+          </DialogActions>
+        </Dialog>
       </aside>
       <main className="main-container">
         <div className="hexagonal-map-container">
