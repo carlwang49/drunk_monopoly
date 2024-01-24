@@ -2,6 +2,8 @@ import React from 'react';
 import PlayerToken from "./PlayerToken";
 import "./components_css/HexagonalMap.css";
 import Tooltip from '@mui/material/Tooltip';
+import SpecialHexContent from '../land/SpecialHexContent';
+import { getTooltipContent } from './util/tooltipFunctions.js';
 
 function HexagonalMap({ players, landStatus }) {
   const hexagons = generateHexagonalGrid(6); // Radius of the large hexagon is 6
@@ -21,16 +23,6 @@ function HexagonalMap({ players, landStatus }) {
     'rgba(255, 165, 0, 0.5)'   // 半透明的橙色
   ];
 
-
-  // Function to get tooltip content for a land
-  const getTooltipContent = (landKey) => {
-    const land = landStatus[landKey];
-    if (!land) {
-      return `Unclaimed Land, Coordinates: ${landKey}`;
-    }
-    return `Team:${land.owner}, Wine: ${land.wine}, Coordinates: ${landKey}`;
-  };
-
   return (
     <div className="hexagonal-map">
       <svg
@@ -47,7 +39,7 @@ function HexagonalMap({ players, landStatus }) {
           const wineCount = land?.wine || 0;
   
           return (
-            <Tooltip key={i} title={getTooltipContent(landKey)} arrow>
+            <Tooltip key={i} title={getTooltipContent(landKey, landStatus)} arrow>
               <g>
                 <Hexagon
                   q={hex.q}
@@ -74,6 +66,7 @@ function HexagonalMap({ players, landStatus }) {
                     <LongArrow />
                   </g>
                 )}
+                <SpecialHexContent q={hex.q} r={hex.r} x={x} y={y} />
               </g>
             </Tooltip>
           );

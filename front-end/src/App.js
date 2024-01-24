@@ -3,9 +3,11 @@ import "./App.css";
 import HexagonalMap from "./components/HexagonalMap";
 import Dice from "react-dice-roll";
 import Scoreboard from "./components/Scoreboard";
+import CardDeck from "./components/CardDeck";
 import { HEX_PATH } from './constants';
+import { motion } from 'framer-motion';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-
+import MySvgComponent from './MySvgComponent'; // 确保路径正确
 
 function App() {
   
@@ -30,6 +32,37 @@ function App() {
   const [openDialog, setOpenDialog] = useState(false);  
   const [selectedHex, setSelectedHex] = useState(null);
 
+  const [resetDeckKey, setResetDeckKey] = useState(0); // 新增状态
+  const [resetFateDeckKey, setResetFateDeckKey] = useState(0); // 为命运卡堆添加新的状态
+  const [playAnimation, setPlayAnimation] = useState(false);
+
+  const handleTriviaCardDraw = () => {
+    console.log("Trivia card drawn");
+    setAutoDrawTriviaCard(true); // 触发自动抽取问答卡
+  };
+
+  const handleFateCardDraw = () => {
+    console.log("Fate card drawn");
+    setAutoDrawFateCard(true); // 触发自动抽取命运卡
+  };
+
+  const [autoDrawTriviaCard, setAutoDrawTriviaCard] = useState(false);
+  const [autoDrawFateCard, setAutoDrawFateCard] = useState(false); // 为命运卡堆添加新的状态
+
+  // 在命运卡被抽取后，需要重置 autoDrawTriviaCard 状态
+  useEffect(() => {
+    if (autoDrawFateCard) {
+      setAutoDrawFateCard(false);
+    }
+  }, [autoDrawFateCard]);
+
+  useEffect(() => {
+    if (autoDrawTriviaCard) {
+      setAutoDrawTriviaCard(false);
+    }
+  }, [autoDrawTriviaCard]);
+
+
   const handleLandPurchase = (hex) => {
     const landKey = `${hex.q},${hex.r}`;
     const currentLand = landStatus[landKey];
@@ -42,7 +75,12 @@ function App() {
       setOpenDialog(true);
     }
   };
-  
+
+  const handleDrawCard = (drawnCard) => {
+    console.log('Card drawn:', drawnCard);
+    // Here you can add the logic of what happens when a card is drawn
+  };
+
   const handlePurchaseOption = (option) => {
     const drinks = ["不喝", "喝一杯", "喝兩杯", "喝三杯"].indexOf(option);
     if (drinks > 0 && selectedHex) {
@@ -86,27 +124,63 @@ function App() {
     setPurchasingPlayerId((prevId) => {
       return playerToMove.id;
     });
-
+  
     const currentIndex = HEX_PATH.findIndex(hex => 
       hex.q === playerToMove.position.q && hex.r === playerToMove.position.r
     );
-
+  
     let newIndex = currentIndex + value;
     if (newIndex >= HEX_PATH.length) {
       newIndex -= HEX_PATH.length;
     }
-
+  
     const newPosition = HEX_PATH[newIndex];
     const updatedPlayers = players.map(player => 
       player.id === playerToMove.id ? { ...player, position: newPosition } : player
     );
-
+  
     setPlayers(updatedPlayers);
+  
+    // 判断是否触发问答卡
+    const triggerTriviaCard = (
+      (newPosition.q === 6 && newPosition.r === -6) ||
+      (newPosition.q === 3 && newPosition.r === -6) ||
+      (newPosition.q === -6 && newPosition.r === 1) ||
+      (newPosition.q === -6 && newPosition.r === 6) ||
+      (newPosition.q === -3 && newPosition.r === 6) ||
+      (newPosition.q === 6 && newPosition.r === 0)
+    );
+  
+    const triggerFateCard = (
+      (newPosition.q === 4 && newPosition.r === -6) ||
+      (newPosition.q === -3 && newPosition.r === 3) ||
+      (newPosition.q === -6 && newPosition.r === 3) ||
+      (newPosition.q === -4 && newPosition.r === 6) ||
+      (newPosition.q === 3 && newPosition.r === 3) ||
+      (newPosition.q === 6 && newPosition.r === -3) ||
+      (newPosition.q === -3 && newPosition.r === -3)
+    );
 
-    // 模擬玩家移動到新位置的延時
+    const triggerAnimation = (
+      (newPosition.q === 1 && newPosition.r === -6) ||
+      (newPosition.q === -5 && newPosition.r === -1) ||
+      (newPosition.q === -6 && newPosition.r === 5) ||
+      (newPosition.q === -1 && newPosition.r === 6) ||
+      (newPosition.q === 5 && newPosition.r === 1) ||
+      (newPosition.q === 6 && newPosition.r === -5)
+    );
+
     setTimeout(() => {
-      handleLandPurchase(newPosition); // 在移動完成後檢查土地購買
-    }, 1000); // 假設移動需要 1 秒
+      if (triggerTriviaCard) {
+        handleTriviaCardDraw();
+      } else if (triggerFateCard) {
+        handleFateCardDraw(); // 触发命运卡
+      } else if (triggerAnimation) {
+        setPlayAnimation(true); // 触发动画
+      } else {
+        handleLandPurchase(newPosition); // 土地购买逻辑
+      }
+    }, 1000);
 
     setCurrentTurn((currentTurn + 1) % players.length);
   };
@@ -114,8 +188,12 @@ function App() {
   const resetGame = () => {
     setPlayers(initialPlayers);
     setCurrentTurn(0);
-    setLandStatus({})
+    setLandStatus({});
+    localStorage.removeItem("cards");
+    setResetDeckKey(prev => prev + 1); // 更新状态以触发卡牌堆重置
+    setResetFateDeckKey(prev => prev + 1); // 更新状态以触发命运卡堆重置
   };
+
 
   return (
     <div className="App">
@@ -144,6 +222,22 @@ function App() {
       <main className="main-container">
         <div className="hexagonal-map-container">
           <HexagonalMap players={players} landStatus={landStatus} />
+          {playAnimation && (
+            <motion.div
+              className="animation-container"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1, transition: { duration: 4 } }}
+              exit={{ scale: 0 }}
+              onAnimationComplete={() => setPlayAnimation(false)}
+            >
+              <MySvgComponent />
+            </motion.div>
+          )}
+        </div>
+        {/* CardDeck component added next to the map */}
+        <div className="card-deck-container">
+          <CardDeck onDraw={handleDrawCard} resetDeckKey={resetDeckKey} deckType="問答卡" disabled autoDraw={autoDrawTriviaCard}/>
+          <CardDeck onDraw={handleDrawCard} resetDeckKey={resetFateDeckKey} deckType="命運卡" disabled autoDraw={autoDrawFateCard}/>
         </div>
         <div className="dice-roll-container">
           <Dice onRoll={handleDiceRoll} />

@@ -1,4 +1,10 @@
 import React from 'react';
+import RedWheelchair from '../imgs/wheelchair-red.svg';
+import GreenWheelchair from '../imgs/wheelchair-green.svg';
+import BlueWheelchair from '../imgs/wheelchair-blue.svg';
+import YellowWheelchair from '../imgs/wheelchair-yellow.svg';
+import PurpleWheelchair from '../imgs/wheelchair-purple.svg';
+import OrangeWheelchair from '../imgs/wheelchair-orange.svg';
 
 function PlayerToken({ player, hexSize, index, totalPlayers }) {
   // Convert axial to pixel coordinates
@@ -21,12 +27,25 @@ function PlayerToken({ player, hexSize, index, totalPlayers }) {
   const adjustedX = x + offsetX;
   const adjustedY = y + offsetY;
 
-  // Determine the fill color based on the player's index
-  const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
-  const fill = colors[index % colors.length]; // Cycle through the colors array based on index
+  // Determine the SVG file based on the player's index
+  const svgFiles = [
+    RedWheelchair,
+    GreenWheelchair,
+    BlueWheelchair,
+    YellowWheelchair,
+    PurpleWheelchair,
+    OrangeWheelchair,
+  ];
+  const svgFile = svgFiles[index % svgFiles.length]; // Cycle through the SVG files based on index
 
   return (
-    <circle cx={adjustedX} cy={adjustedY} r={hexSize / 10} fill={fill} />
+    <image
+      x={adjustedX - hexSize / 1.5} // Adjust positioning based on the size of your SVG
+      y={adjustedY - hexSize / 1.5}
+      width={hexSize / 0.75} // Adjust the size based on your preference
+      height={hexSize / 0.75}
+      xlinkHref={svgFile}
+    />
   );
 }
 

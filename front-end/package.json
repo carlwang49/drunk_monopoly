@@ -12,8 +12,10 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
     "@mui/material": "^5.11.0",
+    "@mui/icons-material": "^5.11.0",
     "@emotion/react": "^11.4.0",
-    "@emotion/styled": "^11.3.0"
+    "@emotion/styled": "^11.3.0",
+    "framer-motion": "^4.1.17"
   },
   "scripts": {
     "start": "react-scripts start",
