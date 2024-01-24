@@ -1,20 +1,23 @@
-# Use the official Node.js image as the base
-FROM node:14-alpine
+# Use an official Node runtime as a parent image
+FROM node:14
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies for the application
+# Install any dependencies
 RUN npm install
 
-# Copy the application code to the working directory
+# Bundle app source inside the Docker image
 COPY . .
 
-# Expose the port on which the application will run (default for React is 3000)
+# Make port available to the world outside this container
 EXPOSE 3000
 
-# Start the application
+# Define environment variable
+ENV NODE_ENV development
+
+# Run npm start when the container launches
 CMD ["npm", "start"]
