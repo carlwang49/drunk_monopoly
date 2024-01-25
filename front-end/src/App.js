@@ -312,13 +312,11 @@ function App() {
                 <CardDeck
                   onDraw={handleDrawCard}
                   deckType="問答卡"
-                  disabled
                   autoDraw={autoDrawTriviaCard}
                 />
                 <CardDeck
                   onDraw={handleDrawCard}
                   deckType="命運卡"
-                  disabled
                   autoDraw={autoDrawFateCard}
                 />
               </div>
