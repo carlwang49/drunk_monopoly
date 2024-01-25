@@ -6,7 +6,7 @@
   height: 100vh;
   text-align: center;
   background-color: #330000; /* 深红色背景 */
-  background-image: url('../imgs/blood-splatter.png'); /* 血迹图案，需要替换成您的图片路径 */
+  background-image: url('../../imgs/blood-splatter.png'); /* 血迹图案，需要替换成您的图片路径 */
   background-size: cover; /* 延伸背景图到全屏 */
   background-position: center; /* 图片在容器中居中 */
   color: #f80606; /* 血红色文字 */

@@ -37,6 +37,9 @@ function App() {
     setGameStarted(true);
   };
 
+  // 罰酒狀態
+  const [landPurchaseAnimation, setLandPurchaseAnimation] = useState(false);
+  const [landPurchaseMessage, setLandPurchaseMessage] = useState('');
 
   const [players, setPlayers] = useState(() => {
     const storedPlayers = localStorage.getItem("players");
@@ -55,9 +58,6 @@ function App() {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedHex, setSelectedHex] = useState(null);
-
-  const [resetDeckKey, setResetDeckKey] = useState(0); // 新增状态
-  const [resetFateDeckKey, setResetFateDeckKey] = useState(0); // 为命运卡堆添加新的状态
   const [playAnimation, setPlayAnimation] = useState(false);
 
   const handleTriviaCardDraw = () => {
@@ -89,14 +89,11 @@ function App() {
   const handleLandPurchase = (hex) => {
     const landKey = `${hex.q},${hex.r}`;
     const currentLand = landStatus[landKey];
-    const currentPlayerId = players[currentTurn].id; // Get current player ID based on turn
-    console.log("currentPlayerId", currentPlayerId);
+    const currentPlayerId = players[currentTurn].id;
     if (currentLand && currentLand.owner !== currentPlayerId) {
-      alert(
-        `你踩到了 ${
-          players.find((p) => p.id === currentLand.owner).name
-        } 的土地，罚 ${currentLand.wine} 杯酒！`
-      );
+      const message = `${players[currentTurn].name} 踩到 ${players.find((p) => p.id === currentLand.owner).name} 的地，請罰 ${currentLand.wine} 杯!`;
+      setLandPurchaseMessage(message);
+      setLandPurchaseAnimation(true);
     } else {
       setSelectedHex(hex);
       setOpenDialog(true);
@@ -231,15 +228,18 @@ function App() {
   };
 
   const resetGame = () => {
-    localStorage.setItem("gameStarted", "false"); // 在本地存储中将 gameStarted 设置为 false
-    setGameStarted(false); // 将 gameStarted 设置为 false
+    // 現有的重置邏輯
+    localStorage.setItem("gameStarted", "false");
+    setGameStarted(false);
     setPlayers(initialPlayers);
     setCurrentTurn(0);
     setLandStatus({});
-    localStorage.removeItem("cards");
-    setResetDeckKey((prev) => prev + 1);
-    setResetFateDeckKey((prev) => prev + 1);
+  
+    // 清除 localStorage 中關於問答卡和命運卡的數據
+    localStorage.removeItem("問答卡-cards");
+    localStorage.removeItem("命運卡-cards");
   };
+  
 
   return (
     <div className="App">
@@ -268,15 +268,41 @@ function App() {
             </Dialog>
           </aside>
           <main className="main-container">
+          {landPurchaseAnimation && (
+            <motion.div
+              className="land-purchase-animation-container"
+              initial={{ opacity: 0.7 }} // 初始透明度為 0
+              animate={{ opacity: 2, transition: { duration: 5 } }} // 緩慢淡入
+              exit={{ opacity: 0, transition: { delay: 3, duration: 3 } }} // 延遲 20 秒後，用 10 秒的時間緩慢淡出
+              onAnimationComplete={() => setLandPurchaseAnimation(false)}
+              style={{
+                position: "fixed",
+                top: "50%", // 居中顯示
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 1000,
+                fontSize: "2rem",
+                color: "white",
+                backgroundColor: "rgba(0,0,0,0.8)",
+                padding: "10px",
+                borderRadius: "10px",
+                width: "50%",
+                textAlign: "center"
+              }}
+            >
+              {landPurchaseMessage}
+            </motion.div>
+          )}
             <div className="hexagonal-map-container">
               <HexagonalMap players={players} landStatus={landStatus} />
               {playAnimation && (
                 <motion.div
                   className="animation-container"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1, transition: { duration: 4 } }}
-                  exit={{ scale: 0 }}
+                  initial={{ y: "100vh", scale: 0.5, opacity: 0 }}
+                  animate={{ y: 0, scale: 1, opacity: 1, transition: { duration: 3, type: "spring" } }}
+                  exit={{ y: "100vh", scale: 0.5, opacity: 0, transition: { duration: 3 } }}
                   onAnimationComplete={() => setPlayAnimation(false)}
+                  style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 999 }}
                 >
                   <MySvgComponent />
                 </motion.div>
@@ -285,14 +311,12 @@ function App() {
               <div className="card-deck-wrapper">
                 <CardDeck
                   onDraw={handleDrawCard}
-                  resetDeckKey={resetDeckKey}
                   deckType="問答卡"
                   disabled
                   autoDraw={autoDrawTriviaCard}
                 />
                 <CardDeck
                   onDraw={handleDrawCard}
-                  resetDeckKey={resetFateDeckKey}
                   deckType="命運卡"
                   disabled
                   autoDraw={autoDrawFateCard}
