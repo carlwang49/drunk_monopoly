@@ -6,12 +6,20 @@ import Scoreboard from "./components/Scoreboard";
 import CardDeck from "./components/CardDeck";
 import { HEX_PATH } from './constants';
 import { motion } from 'framer-motion';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper } from '@mui/material';
 import MySvgComponent from './MySvgComponent'; // 确保路径正确
 
 function App() {
   
-  const initialPlayers = [{ id: 1, name: "Team 1", position: { q: 0, r: 6 }, money: 1500 }];
+  const initialPlayers = [
+    { id: 1, name: "Team 1", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 2, name: "Team 2", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 3, name: "Team 3", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 4, name: "Team 4", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 5, name: "Team 5", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 6, name: "Team 6", position: { q: 0, r: 6 }, money: 1500 }
+  ];
+
   const [purchasingPlayerId, setPurchasingPlayerId] = useState(null);
 
   const [players, setPlayers] = useState(() => {
@@ -140,6 +148,13 @@ function App() {
     );
   
     setPlayers(updatedPlayers);
+
+    // 判斷玩家是否移動到特定座標 (0, 6)
+    if (newPosition.q === 0 && newPosition.r === 6) {
+      console.log("No action at (0, 6)");
+      setCurrentTurn((currentTurn + 1) % players.length);
+      return; // 提前返回以避免觸發其他邏輯
+    }
   
     // 判断是否触发问答卡
     const triggerTriviaCard = (
@@ -199,9 +214,6 @@ function App() {
     <div className="App">
       <aside className="scoreboard-container">
         <Scoreboard players={players} />
-        <Button variant="contained" onClick={addPlayer}>Add Player</Button>
-        <Button variant="contained" onClick={removePlayer}>Remove Player</Button>
-        <Button variant="contained" onClick={resetGame}>Reset Game</Button>
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>購買土地</DialogTitle>
           <DialogContent>
@@ -233,12 +245,18 @@ function App() {
               <MySvgComponent />
             </motion.div>
           )}
-        </div>
-        {/* CardDeck component added next to the map */}
-        <div className="card-deck-container">
-          <CardDeck onDraw={handleDrawCard} resetDeckKey={resetDeckKey} deckType="問答卡" disabled autoDraw={autoDrawTriviaCard}/>
-          <CardDeck onDraw={handleDrawCard} resetDeckKey={resetFateDeckKey} deckType="命運卡" disabled autoDraw={autoDrawFateCard}/>
-        </div>
+          {/* 將 CardDeck 放置於地圖的中間 */}
+          <div className="card-deck-wrapper">
+            <CardDeck onDraw={handleDrawCard} resetDeckKey={resetDeckKey} deckType="問答卡" disabled autoDraw={autoDrawTriviaCard}/>
+            <CardDeck onDraw={handleDrawCard} resetDeckKey={resetFateDeckKey} deckType="命運卡" disabled autoDraw={autoDrawFateCard}/>
+          </div>
+            {/* 右邊的設定區 */}
+            <Paper className="settings-panel" elevation={3}>
+              <Button variant="contained" onClick={addPlayer}>Add Player</Button>
+              <Button variant="contained" onClick={removePlayer}>Remove Player</Button>
+              <Button variant="contained" onClick={resetGame}>Reset Game</Button>
+            </Paper>
+          </div>
         <div className="dice-roll-container">
           <Dice onRoll={handleDiceRoll} />
           <p style={{ fontSize: '2em', color: 'black' }}>
