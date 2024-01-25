@@ -35,7 +35,7 @@ function Scoreboard({ players, landStatus }) {
               {player.name}
             </Typography>
             <Typography variant="body1" sx={{ fontFamily: 'Comic Sans MS, cursive' }}>
-              Total Wine: {calculateTotalWine(player.id)}
+              Total Shot: {calculateTotalWine(player.id)}
             </Typography>
           </CardContent>
         </Card>
