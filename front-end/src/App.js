@@ -20,12 +20,12 @@ import MySvgComponent from "./MySvgComponent"; // 确保路径正确
 
 function App() {
   const initialPlayers = [
-    { id: 1, name: "Team 1", position: { q: 0, r: 6 }, money: 1500 },
-    { id: 2, name: "Team 2", position: { q: 0, r: 6 }, money: 1500 },
-    { id: 3, name: "Team 3", position: { q: 0, r: 6 }, money: 1500 },
-    { id: 4, name: "Team 4", position: { q: 0, r: 6 }, money: 1500 },
-    { id: 5, name: "Team 5", position: { q: 0, r: 6 }, money: 1500 },
-    { id: 6, name: "Team 6", position: { q: 0, r: 6 }, money: 1500 },
+    { id: 1, name: "Team 1", position: { q: 0, r: 6 }},
+    { id: 2, name: "Team 2", position: { q: 0, r: 6 }},
+    { id: 3, name: "Team 3", position: { q: 0, r: 6 }},
+    { id: 4, name: "Team 4", position: { q: 0, r: 6 }},
+    { id: 5, name: "Team 5", position: { q: 0, r: 6 }},
+    { id: 6, name: "Team 6", position: { q: 0, r: 6 }},
   ];
 
   const [purchasingPlayerId, setPurchasingPlayerId] = useState(null);
@@ -248,7 +248,7 @@ function App() {
       ) : (
         <>
           <aside className="scoreboard-container">
-            <Scoreboard players={players} />
+            <Scoreboard players={players} landStatus={landStatus} />
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
               <DialogTitle>購買土地</DialogTitle>
               <DialogContent>
@@ -313,8 +313,8 @@ function App() {
             </div>
             <div className="dice-roll-container">
               <Dice onRoll={handleDiceRoll} />
-              <p style={{ fontSize: "2em", color: "black" }}>
-                Current Turn: {players[currentTurn].name}
+              <p style={{ fontSize: "3em", color: "#e97e7e" }}>
+                Turn: {players[currentTurn].name}
               </p>
             </div>
           </main>
