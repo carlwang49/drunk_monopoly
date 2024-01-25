@@ -80,7 +80,7 @@ function CardDeck({ onDraw, resetDeckKey, deckType, disabled, autoDraw }) {
 
   return (
     <div>
-      <h3>{deckType} Deck</h3>
+      <h3></h3>
       <Button 
         variant="contained" 
         onClick={handleDrawCard} 
