@@ -1,0 +1,36 @@
+.start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #330000; /* 深红色背景 */
+  background-image: url('../imgs/blood-splatter.png'); /* 血迹图案，需要替换成您的图片路径 */
+  background-size: cover; /* 延伸背景图到全屏 */
+  background-position: center; /* 图片在容器中居中 */
+  color: #f80606; /* 血红色文字 */
+  font-family: 'Creepster', cursive; /* 使用更具特色的字体，需要添加相应的@import或link标签 */
+}
+
+.start-screen h1 {
+  text-shadow: 2px 2px 4px #000000; /* 文字阴影效果 */
+  font-size: 3rem; /* 调整标题字体大小 */
+}
+
+.start-screen button {
+  padding: 15px 30px; /* 调整按钮内边距 */
+  margin-top: 30px; /* 增加按钮上边距 */
+  font-size: 24px; /* 调整按钮字体大小 */
+  cursor: pointer;
+  background-color: #600000; /* 深红色按钮 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.start-screen button:hover {
+  background-color: #ff0000; /* 悬停时的颜色变化 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 悬停时的阴影效果 */
+}
