@@ -1,78 +1,112 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogContentText } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
+import QuestionCards from './util/QuestionCards';
+import FateCards from './util/FateCards';
 
-function CardDeck({ onDraw, resetDeckKey, deckType, disabled, autoDraw }) {
-  const localStorageKey = `${deckType}-cards`; // 根据卡牌类型创建唯一的 localStorage 键
+function CardDeck({ onDraw, deckType, autoDraw }) {
+  const localStorageKey = `${deckType}-cards`;
 
-  // 初始化卡牌状态
-  const initialCards = () => {
-    const savedCards = localStorage.getItem(localStorageKey);
-    return savedCards ? JSON.parse(savedCards) : Array.from({ length: 25 }, (_, i) => ({ id: i, content: `${deckType} Card ${i + 1}` }));
+  // Shuffle cards
+  const shuffleCards = (cards) => {
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]]; // Swap elements
+    }
+    return cards;
   };
 
-  const [cards, setCards] = useState(initialCards);
+  // Initialize card array with shuffled cards
+  const initializeCards = () => {
+    const savedCards = localStorage.getItem(localStorageKey);
+    if (savedCards) {
+      return shuffleCards(JSON.parse(savedCards));
+    } else {
+      const initialCards = deckType === "問答卡" ? QuestionCards : FateCards;
+      return shuffleCards([...initialCards]); // Shuffle cards before setting them
+    }
+  };
+
+  const [cards, setCards] = useState(initializeCards);
   const [open, setOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
 
-  useEffect(() => {
-    const savedCards = localStorage.getItem(localStorageKey);
-    if (savedCards) {
-      setCards(JSON.parse(savedCards));
-    }
-  }, []); // 添加空数组作为依赖，使 useEffect 仅在组件挂载时执行
-
-  // 当卡牌状态变化时，更新 localStorage
+  // Update localStorage
   useEffect(() => {
     localStorage.setItem(localStorageKey, JSON.stringify(cards));
-  }, [cards, localStorageKey]); // 仅在 cards 或 localStorageKey 变化时执行
-
-  useEffect(() => {
-    if (autoDraw) {
-      handleDrawCard();
-    }
-  }, [autoDraw]);
-
-  // useEffect 钩子监听重置
-  useEffect(() => {
-    // 检查是否需要重置卡牌堆
-    if (resetDeckKey > 0) {
-      setCards(Array.from({ length: 25 }, (_, i) => ({ id: i, content: `${deckType} Card ${i + 1}` })));
-      setSelectedCard(null);
-      setOpen(false);
-      localStorage.removeItem(localStorageKey);
-    }
-  }, [resetDeckKey, localStorageKey, deckType]);
-
+  }, [cards, localStorageKey]);
+  
+  // Card drawing logic
   const handleDrawCard = () => {
-    // 确保在 autoDraw 为 true 时能够抽取卡牌
-    if (autoDraw || (cards.length > 0 && !disabled)) {
+    if (cards.length > 0 && autoDraw) { // Adjusted condition
       const newCards = [...cards];
-      const drawnCard = newCards.pop();
+      const drawnCard = newCards.shift();
       setCards(newCards);
-      setSelectedCard(drawnCard); // 设置被抽出的卡牌
-      setOpen(true); // 打开弹窗
-      if (onDraw && drawnCard) {
-        onDraw(drawnCard); // 传递被抽出的卡牌信息给父组件
+      setSelectedCard(drawnCard);
+      setOpen(true);
+      if (onDraw) {
+        onDraw(drawnCard);
       }
     }
   };
 
-  // 对话框的动画变量
+  // debug
+  // const handleDrawCard = () => {
+  //   if (cards.length > 0) {
+  //     const newCards = [...cards];
+  //     const drawnCard = newCards.shift();
+  //     setCards(newCards);
+  //     setSelectedCard(drawnCard);
+  //     setOpen(true);
+  //     if (onDraw) {
+  //       onDraw(drawnCard);
+  //     }
+  //   }
+  // };
+
+  // 自动抽卡监听
+  useEffect(() => {
+    if (autoDraw) { // Simplified condition
+      handleDrawCard();
+    }
+  }, [autoDraw]);
+
+  // 渲染卡片内容
+  const renderCardContent = () => {
+    if (!selectedCard) {
+      return <p>No card</p>;
+    }
+  
+    if (deckType === "問答卡") {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <p style={{ fontSize: '30px' }}>{selectedCard.content}</p>
+          {selectedCard.type !== "open" && selectedCard.image && selectedCard.image.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {selectedCard.image.map((image, index) => (
+                <img key={index} src={image} alt={`Image ${index}`} style={{ width: 'auto', height: '300px', marginRight: '5px' }} />
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap'}}>
+            {selectedCard.options.map((option, index) => (
+              <Button key={index} style={{ margin: '5px', fontSize: '20px' }}>{option}</Button>
+            ))}
+          </div>
+        </div>
+      );
+    } else if (deckType === "命運卡") {
+      return <p style={{ fontSize: '50px' }}>{selectedCard.content}</p>;
+    }
+  };
+  
+  
+  // 对话框动画设置
   const dialogVariants = {
-    hidden: { scale: 0.9, opacity: 0, transition: { duration: 1 } }, // 持续时间为 1 秒
+    hidden: { scale: 0.9, opacity: 0, transition: { duration: 1 } },
     visible: { scale: 1, opacity: 1, transition: { duration: 1 } },
-    exit: { scale: 0.9, opacity: 0, transition: { duration: 1 } },
+    exit: { scale: 0.9, opacity: 0, transition: { duration: 1 } }
   };
-
-  // 卡牌的动画变量
-  const cardVariants = {
-    hidden: { y: 20, opacity: 0, transition: { duration: 1 } },
-    visible: { y: 0, opacity: 1, transition: { duration: 1 } },
-    exit: { y: -20, opacity: 0, transition: { duration: 1 } },
-  };
-
-  const dialogBackgroundColor = deckType === '命運卡' ? 'rgba(255, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'; // 命运卡为黄色背景
 
   const handleClose = () => {
     setOpen(false);
@@ -80,13 +114,12 @@ function CardDeck({ onDraw, resetDeckKey, deckType, disabled, autoDraw }) {
 
   return (
     <div>
-      <h3></h3>
       <Button 
         variant="contained" 
         onClick={handleDrawCard} 
-        disabled={cards.length === 0}
+        style={{ marginBottom: '10px' }}
       >
-        {deckType} ({cards.length})
+        {deckType} ({cards.length} left)
       </Button>
       <AnimatePresence>
         {open && (
@@ -99,23 +132,15 @@ function CardDeck({ onDraw, resetDeckKey, deckType, disabled, autoDraw }) {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                style={{ backgroundColor: dialogBackgroundColor }} // 根据卡牌类型设置背景颜色
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
               >
                 {children}
               </motion.div>
             )}
           >
-            <DialogTitle>Drawn Card</DialogTitle>
+            <DialogTitle>{deckType}</DialogTitle>
             <DialogContent>
-              <DialogContentText
-                component={motion.p}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                {selectedCard ? selectedCard.content : 'No card'}
-              </DialogContentText>
+              {selectedCard && renderCardContent()}
             </DialogContent>
           </Dialog>
         )}

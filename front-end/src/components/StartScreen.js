@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import "./StartScreen.css";
+import "./components_css/StartScreen.css";
 
 const StartScreen = ({ onStart }) => {
   return (
@@ -10,7 +10,7 @@ const StartScreen = ({ onStart }) => {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      <h1>Welcome to Intoxicated Monopoly</h1>
+      <h1>Welcome to Drunk Monopoly</h1>
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
