@@ -1,13 +1,13 @@
 const QuestionCards = [
   // 二選一 (10题)
-  {
-    id: 1,
-    type: "binary",
-    content: "卡門最近一次染的頭髮是什麼顏色？",
-    options: ["(A) 金色", "(B) 灰色"],
-    image: [],
-    answer: 0
-  },
+  // {
+  //   id: 1,
+  //   type: "binary",
+  //   content: "卡門最近一次染的頭髮是什麼顏色？",
+  //   options: ["(A) 金色", "(B) 灰色"],
+  //   image: [],
+  //   answer: 0
+  // },
   {
     id: 2,
     type: "binary",
@@ -16,14 +16,14 @@ const QuestionCards = [
     image: ["/imgs/image2a.jpg", "/imgs/image2b.jpg"],
     answer: 1
   },
-  {
-    id: 3,
-    type: "binary",
-    content: "卡門最喜歡的韓劇？",
-    options: ["(A) 太陽的後裔", "(B) 鬼怪"],
-    image: ["/imgs/image3a.jpg", "/imgs/image3b.jpg"],
-    answer: 1
-  },
+  // {
+  //   id: 3,
+  //   type: "binary",
+  //   content: "卡門最喜歡的韓劇？",
+  //   options: ["(A) 太陽的後裔", "(B) 鬼怪"],
+  //   image: ["/imgs/image3a.jpg", "/imgs/image3b.jpg"],
+  //   answer: 1
+  // },
   {
     id: 4,
     type: "binary",
@@ -107,14 +107,14 @@ const QuestionCards = [
     ],
     answer: 0
   },
-  {
-    id: 13,
-    type: "choice",
-    content: "卡門沒有去過下列哪個國家？",
-    options: ["(A) 捷克", "(B) 羅馬尼亞", "(C) 斯洛伐克", "(D) 匈牙利"],
-    image: [],
-    answer: 2
-  },
+  // {
+  //   id: 13,
+  //   type: "choice",
+  //   content: "卡門沒有去過下列哪個國家？",
+  //   options: ["(A) 捷克", "(B) 羅馬尼亞", "(C) 斯洛伐克", "(D) 匈牙利"],
+  //   image: [],
+  //   answer: 2
+  // },
   {
     id: 14,
     type: "choice",
@@ -136,19 +136,19 @@ const QuestionCards = [
     ],
     answer: 1
   },
-  {
-    id: 16,
-    type: "choice",
-    content: "卡門每個月平均花最少錢在？",
-    options: ["(A) 酒", "(B) 貓咪", "(C) 菸", "(D) 衣服"],
-    image: [
-      "/imgs/image16a.jpg",
-      "/imgs/image16b.jpg",
-      "/imgs/image16c.jpg",
-      "/imgs/image16d.jpg",
-    ],
-    answer: 3
-  },
+  // {
+  //   id: 16,
+  //   type: "choice",
+  //   content: "卡門每個月平均花最少錢在？",
+  //   options: ["(A) 酒", "(B) 貓咪", "(C) 菸", "(D) 衣服"],
+  //   image: [
+  //     "/imgs/image16a.jpg",
+  //     "/imgs/image16b.jpg",
+  //     "/imgs/image16c.jpg",
+  //     "/imgs/image16d.jpg",
+  //   ],
+  //   answer: 3
+  // },
   {
     id: 17,
     type: "choice",
@@ -207,14 +207,14 @@ const QuestionCards = [
     image: [],
     answer: 1
   },
-  {
-    id: 23,
-    type: "choice",
-    content: "卡門最喜歡哪種家俱？",
-    options: ["(A) 沙發", "(B) 電視", "(C) 門", "(D) 茶几"],
-    image: [],
-    answer: 2
-  },
+  // {
+  //   id: 23,
+  //   type: "choice",
+  //   content: "卡門最喜歡哪種家俱？",
+  //   options: ["(A) 沙發", "(B) 電視", "(C) 門", "(D) 茶几"],
+  //   image: [],
+  //   answer: 2
+  // },
   {
     id: 24,
     type: "choice",

@@ -178,7 +178,12 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
         );
       }
     } else if (deckType === "命運卡") {
-      return <p style={{ fontSize: "50px" }}>{selectedCard.content}</p>;
+      return (
+        <div>
+          <p style={{ fontSize: "50px" }}>{selectedCard.content}</p>
+          <p style={{ fontSize: "30px" }}>{selectedCard.description}</p>
+        </div>
+      );
     }
   };
 
@@ -218,7 +223,15 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
               </motion.div>
             )}
           >
-            <DialogTitle>{deckType}</DialogTitle>
+            <DialogTitle>
+              {selectedCard && selectedCard.type === "binary"
+                ? "二選一"
+                : selectedCard && selectedCard.type === "choice"
+                ? "選選看"
+                : selectedCard && selectedCard.type === "open"
+                ? "卡門想什麼～"
+                : deckType}
+            </DialogTitle>
             <DialogContent>{selectedCard && renderCardContent()}</DialogContent>
           </Dialog>
         )}

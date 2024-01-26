@@ -131,3 +131,18 @@ main {
   /* Add other styles as needed */
 }
 
+.dice-and-button-container {
+  display: flex;
+  align-items: center; /* Keep elements aligned at the center */
+  justify-content: center; /* Horizontally center the elements */
+  gap: 100px; /* Space between dice and button container */
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  align-items: center; /* Align buttons in the center */
+  gap: 20px; /* Space between buttons */
+}
+
+
