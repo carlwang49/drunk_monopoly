@@ -16,7 +16,8 @@ import {
   DialogTitle,
   Paper,
 } from "@mui/material";
-import MySvgComponent from "./MySvgComponent"; // 确保路径正确
+import MySvgComponent from "./MySvgComponent"; 
+import JailAnimation from './JailAnimation';
 
 function App() {
   const initialPlayers = [
@@ -40,6 +41,18 @@ function App() {
   // 罰酒狀態
   const [landPurchaseAnimation, setLandPurchaseAnimation] = useState(false);
   const [landPurchaseMessage, setLandPurchaseMessage] = useState('');
+
+  // 重置遊戲
+  const [openResetDialog, setOpenResetDialog] = useState(false);
+
+  // 坐牢
+  const [jailedPlayers, setJailedPlayers] = useState({});
+  const [showJailAnimation, setShowJailAnimation] = useState(false);
+  const triggerJailAnimation = (playerId) => {
+    // Set the state to show the jail animation for a specific player
+    setShowJailAnimation(playerId);
+    // You might need to add more code here to handle the animation specifics
+  };
 
   const [players, setPlayers] = useState(() => {
     const storedPlayers = localStorage.getItem("players");
@@ -86,6 +99,7 @@ function App() {
     }
   }, [autoDrawTriviaCard]);
 
+  // 買地狀態
   const handleLandPurchase = (hex) => {
     const landKey = `${hex.q},${hex.r}`;
     const currentLand = landStatus[landKey];
@@ -137,25 +151,46 @@ function App() {
     }
   }, []); // 确保只在组件首次渲染时执行
 
-  const addPlayer = () => {
-    const newId = players.length + 1;
-    const newPlayer = {
-      id: newId,
-      name: `Team ${newId}`,
-      position: { q: 0, r: 6 },
-      money: 1500,
-    };
-    setPlayers([...players, newPlayer]);
-  };
 
-  const removePlayer = () => {
-    if (players.length > 1) {
-      setPlayers(players.slice(0, -1));
+  // 設定區
+  const addPlayer = () => {
+    if (players.length < 6) { // 检查玩家数量是否小于6
+      const newId = players.length + 1;
+      const newPlayer = {
+        id: newId,
+        name: `Team ${newId}`,
+        position: { q: 0, r: 6 },
+      };
+      setPlayers([...players, newPlayer]);
     }
   };
 
+  const removePlayer = () => {
+    if (players.length > 2) { // 检查玩家数量是否大于2
+      setPlayers(players.slice(0, -1));
+    }
+  };
+  
+
+  // 骰子區
   const handleDiceRoll = (value) => {
     const playerToMove = players[currentTurn];
+
+    // Check if the player is in jail and skip their turn if so
+    if (jailedPlayers[playerToMove.id]) {
+      // Use the renamed function 'triggerJailAnimation' here
+      triggerJailAnimation(playerToMove.id);
+  
+      // Extend the timeout to the duration of the jail animation
+      setTimeout(() => {
+        setJailedPlayers(prevState => ({ ...prevState, [playerToMove.id]: false }));
+        setShowJailAnimation(false); // Make sure to hide the jail animation
+        setCurrentTurn((currentTurn + 1) % players.length); // Move to the next player after animation
+      }, 5000); // Extend the duration to 5 seconds or as needed
+  
+      return; // Skip the rest of the function
+    }
+
     setPurchasingPlayerId((prevId) => {
       return playerToMove.id;
     });
@@ -184,6 +219,10 @@ function App() {
       console.log("No action at (0, 6)");
       setCurrentTurn((currentTurn + 1) % players.length);
       return; // 提前返回以避免觸發其他邏輯
+    } else if (newPosition.q === 0 && newPosition.r === -6) {
+      setJailedPlayers(prevState => ({ ...prevState, [playerToMove.id]: true }));
+      setCurrentTurn((currentTurn + 1) % players.length);
+      return
     }
 
     // 判断是否触发问答卡
@@ -227,28 +266,48 @@ function App() {
     setCurrentTurn((currentTurn + 1) % players.length);
   };
 
-  const resetGame = () => {
-    // 現有的重置邏輯
+  const confirmResetGame = () => {
     localStorage.setItem("gameStarted", "false");
     setGameStarted(false);
     setPlayers(initialPlayers);
     setCurrentTurn(0);
     setLandStatus({});
-  
-    // 清除 localStorage 中關於問答卡和命運卡的數據
     localStorage.removeItem("問答卡-cards");
     localStorage.removeItem("命運卡-cards");
+    setOpenResetDialog(false); // 关闭对话框
   };
   
-
+  const resetGame = () => {
+    setOpenResetDialog(true); // 打开确认对话框
+  };
+  
   return (
     <div className="App">
+      <Dialog
+        open={openResetDialog}
+        onClose={() => setOpenResetDialog(false)}
+      >
+        <DialogTitle>{"Game Reset"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to reset the game? This action will clear all game data
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={confirmResetGame} color="primary">
+            Confirm
+          </Button>
+          <Button onClick={() => setOpenResetDialog(false)} color="primary" autoFocus>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
       {!gameStarted ? (
         <StartScreen onStart={startGame} />
       ) : (
         <>
           <aside className="scoreboard-container">
-            <Scoreboard players={players} landStatus={landStatus} />
+            <Scoreboard players={players} landStatus={landStatus} currentTurn={currentTurn} />
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
               <DialogTitle>購買土地</DialogTitle>
               <DialogContent>
@@ -268,6 +327,12 @@ function App() {
             </Dialog>
           </aside>
           <main className="main-container">
+          {showJailAnimation && (
+            <JailAnimation
+              playerId={showJailAnimation}
+              onAnimationEnd={() => setShowJailAnimation(false)}
+            />
+          )}
           {landPurchaseAnimation && (
             <motion.div
               className="land-purchase-animation-container"
@@ -335,8 +400,7 @@ function App() {
             </div>
             <div className="dice-roll-container">
               <Dice onRoll={handleDiceRoll} />
-              <p style={{ fontSize: "3em", color: "#e97e7e" }}>
-                Turn: {players[currentTurn].name}
+              <p style={{ fontSize: "3em", fontWeight: "bold", color: "#808080" }}>
               </p>
             </div>
           </main>

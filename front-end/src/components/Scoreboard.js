@@ -1,16 +1,17 @@
 import React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
 
-function Scoreboard({ players, landStatus }) {
+function Scoreboard({ players, landStatus, currentTurn }) {
   // 团队颜色映射
   const teamColors = {
-    'Team 1': 'rgba(255, 0, 0, 0.8)', 
-    'Team 2': 'rgba(0, 255, 0, 0.8)',   
-    'Team 3': 'rgba(0, 0, 255, 0.8)',
-    'Team 4': 'rgba(255, 255, 0, 0.8)',
-    'Team 5': 'rgba(128, 0, 128, 0.8)',  // 半透明的紫色
-    'Team 6': 'rgba(255, 165, 0, 0.8)'   // 半透明的橙色
+    1: 'rgba(255, 0, 0, ', // 红色
+    2: 'rgba(0, 255, 0, ', // 绿色
+    3: 'rgba(0, 0, 255, ', // 蓝色
+    4: 'rgba(255, 255, 0, ', // 黄色
+    5: 'rgba(128, 0, 128, ', // 紫色
+    6: 'rgba(255, 165, 0, ' // 橙色
   };
+
 
   // 计算每个玩家在所有土地上 wine 的累加
   const calculateTotalWine = (playerId) => {
@@ -18,6 +19,14 @@ function Scoreboard({ players, landStatus }) {
       return land.owner === playerId ? total + land.wine : total;
     }, 0);
   };
+
+  const getCardBackgroundColor = (playerId) => {
+    const isActivePlayer = players[currentTurn] && players[currentTurn].id === playerId;
+    const opacity = isActivePlayer ? 1 : 0.2;
+    const colorBase = teamColors[playerId] || 'rgba(0,0,0,'; // 默认黑色
+    return `${colorBase}${opacity})`;
+  };
+  
 
   return (
     <div>
@@ -27,7 +36,7 @@ function Scoreboard({ players, landStatus }) {
           key={player.id}
           sx={{
             marginBottom: 2,
-            backgroundColor: teamColors[player.name],
+            backgroundColor: getCardBackgroundColor(player.id),
           }}
         >
           <CardContent>
