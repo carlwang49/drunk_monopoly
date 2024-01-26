@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import QuestionCards from './util/QuestionCards';
-import FateCards from './util/FateCards';
+import React, { useState, useEffect } from "react";
+import { Button, Dialog, DialogTitle, DialogContent } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import QuestionCards from "./util/QuestionCards";
+import FateCards from "./util/FateCards";
 
 function CardDeck({ onDraw, deckType, autoDraw }) {
   const localStorageKey = `${deckType}-cards`;
@@ -30,12 +30,14 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
   const [cards, setCards] = useState(initializeCards);
   const [open, setOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isShaking, setIsShaking] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState(null);
 
   // Update localStorage
   useEffect(() => {
     localStorage.setItem(localStorageKey, JSON.stringify(cards));
   }, [cards, localStorageKey]);
-  
+
   // Card drawing logic
   const handleDrawCard = () => {
     if (cards.length > 0 && autoDraw) { // Adjusted condition
@@ -64,48 +66,126 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
   //   }
   // };
 
-  // 自动抽卡监听
   useEffect(() => {
-    if (autoDraw) { // Simplified condition
+    if (autoDraw) {
+      // Simplified condition
       handleDrawCard();
     }
   }, [autoDraw]);
 
-  // 渲染卡片内容
+  // Animation variants for shaking effect
+  const shakeVariants = {
+    shake: {
+      x: [0, -10, 10, -10, 10, 0],
+      transition: { repeat: 3, duration: 0.2 },
+    },
+  };
+
+  const onOptionClick = (index) => {
+    if (selectedCard.answer === index) {
+      // Correct answer
+      setOpen(false); // Close dialog
+      setSelectedCard(null); // Clear selected card
+      // Trigger success logic, if any
+    } else {
+      // Incorrect answer
+      setIsShaking(true); // Start shaking
+      setTimeout(() => setIsShaking(false), 600); // Stop shaking after 600ms
+    }
+  };
+
   const renderCardContent = () => {
     if (!selectedCard) {
       return <p>No card</p>;
     }
-  
+
     if (deckType === "問答卡") {
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <p style={{ fontSize: '30px' }}>{selectedCard.content}</p>
-          {selectedCard.type !== "open" && selectedCard.image && selectedCard.image.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {selectedCard.image.map((image, index) => (
-                <img key={index} src={image} alt={`Image ${index}`} style={{ width: 'auto', height: '300px', marginRight: '5px' }} />
+      if (selectedCard.type === "open") {
+        // 特殊卡片逻辑
+        return (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <p style={{ fontSize: "30px" }}>{selectedCard.content}</p>
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
+              {selectedCard.options.map((option, index) => (
+                <Button
+                  key={index}
+                  style={{
+                    margin: "5px",
+                    fontSize: "20px",
+                    backgroundColor:
+                      hoveredOption === index ? "lightblue" : "transparent",
+                  }}
+                  onClick={() => onOptionClick(index)}
+                  onMouseEnter={() => setHoveredOption(index)}
+                  onMouseLeave={() => setHoveredOption(null)}
+                >
+                  {hoveredOption === index ? option : option[0]}
+                </Button>
               ))}
             </div>
-          )}
-          <div style={{ display: 'flex', flexWrap: 'wrap'}}>
-            {selectedCard.options.map((option, index) => (
-              <Button key={index} style={{ margin: '5px', fontSize: '20px' }}>{option}</Button>
-            ))}
           </div>
-        </div>
-      );
+        );
+      } else {
+        return (
+          <motion.div
+            variants={shakeVariants}
+            animate={isShaking ? "shake" : "static"}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: "30px" }}>{selectedCard.content}</p>
+              {selectedCard.image && selectedCard.image.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  {selectedCard.image.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Image ${index}`}
+                      style={{
+                        width: "auto",
+                        height: "300px",
+                        marginRight: "5px",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", flexWrap: "wrap" }}>
+                {selectedCard.options.map((option, index) => (
+                  <Button
+                    key={index}
+                    style={{
+                      margin: "5px",
+                      fontSize: "20px",
+                      backgroundColor:
+                        hoveredOption === index ? "lightblue" : "transparent",
+                    }}
+                    onClick={() => onOptionClick(index)}
+                    onMouseEnter={() => setHoveredOption(index)}
+                    onMouseLeave={() => setHoveredOption(null)}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        );
+      }
     } else if (deckType === "命運卡") {
-      return <p style={{ fontSize: '50px' }}>{selectedCard.content}</p>;
+      return <p style={{ fontSize: "50px" }}>{selectedCard.content}</p>;
     }
   };
-  
-  
-  // 对话框动画设置
+
+  // 動畫設計
   const dialogVariants = {
-    hidden: { scale: 0.9, opacity: 0, transition: { duration: 1 } },
-    visible: { scale: 1, opacity: 1, transition: { duration: 1 } },
-    exit: { scale: 0.9, opacity: 0, transition: { duration: 1 } }
+    hidden: { scale: 0.9, opacity: 1, transition: { duration: 3 } },
+    exit: { scale: 0.9, opacity: 0, transition: { duration: 1 } },
   };
 
   const handleClose = () => {
@@ -114,10 +194,10 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
 
   return (
     <div>
-      <Button 
-        variant="contained" 
-        onClick={handleDrawCard} 
-        style={{ marginBottom: '10px' }}
+      <Button
+        variant="contained"
+        onClick={handleDrawCard}
+        style={{ marginBottom: "10px" }}
       >
         {deckType} ({cards.length} left)
       </Button>
@@ -132,16 +212,14 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
               >
                 {children}
               </motion.div>
             )}
           >
             <DialogTitle>{deckType}</DialogTitle>
-            <DialogContent>
-              {selectedCard && renderCardContent()}
-            </DialogContent>
+            <DialogContent>{selectedCard && renderCardContent()}</DialogContent>
           </Dialog>
         )}
       </AnimatePresence>
