@@ -120,7 +120,7 @@ function App() {
   };
 
   const handlePurchaseOption = (option) => {
-    const drinks = ["不喝", "喝一杯", "喝兩杯", "喝三杯"].indexOf(option);
+    const drinks = ["No thanks !", "one shot", "two shots", "three shots"].indexOf(option);
     if (drinks > 0 && selectedHex) {
       const landKey = `${selectedHex.q},${selectedHex.r}`;
       const currentLand = landStatus[landKey] || {};
@@ -309,10 +309,10 @@ function App() {
           <aside className="scoreboard-container">
             <Scoreboard players={players} landStatus={landStatus} currentTurn={currentTurn} />
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-              <DialogTitle>購買土地</DialogTitle>
+              <DialogTitle>Purchase Land</DialogTitle>
               <DialogContent>
-                <DialogContentText>您的選擇是：</DialogContentText>
-                {["不喝", "喝一杯", "喝兩杯", "喝三杯"].map((option, index) => (
+                <DialogContentText>Your choice is:</DialogContentText>
+                {["No thanks !", "one shot", "two shots", "three shots"].map((option, index) => (
                   <Button
                     key={index}
                     onClick={() => handlePurchaseOption(option)}
