@@ -494,7 +494,7 @@ function App() {
                 <Button
                   variant="contained"
                   style={{
-                    backgroundColor: "rgba(169,169,169, 0.8)", // 半透明的黑色背景
+                    backgroundColor: "rgba(169,169,169, 0.4)", // 半透明的黑色背景
                     fontSize: '2em',
                     fontWeight: 'bold',
                     padding: '3px'
@@ -506,7 +506,7 @@ function App() {
                 <Button
                   variant="contained"
                   style={{
-                    backgroundColor: "rgba(169,169,169, 0.8)", // 半透明的黑色背景
+                    backgroundColor: "rgba(169,169,169, 0.4)", // 半透明的黑色背景
                     fontSize: '2em',
                     fontWeight: 'bold',
                     padding: '3px'
