@@ -89,6 +89,7 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
       setCards(newCards);
       setSelectedCard(drawnCard);
       setOpen(true);
+      setClickedOption(null); // 重置 clickedOption 状态
       if (onDraw) {
         onDraw(drawnCard);
       }
@@ -110,17 +111,21 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
     },
   };
 
+  // 修改状态，用于跟踪点击的选项
+  const [clickedOption, setClickedOption] = useState(null);
+
   const onOptionClick = (index) => {
     if (selectedCard.answer === index) {
-      // Correct answer
-      setOpen(false); // Close dialog
-      setSelectedCard(null); // Clear selected card
-      // Trigger success logic, if any
+      // 正确答案的逻辑
+      setOpen(false); // 关闭对话框
+      setSelectedCard(null); // 清除选择的卡片
+      // 触发成功逻辑（如果有的话）
     } else {
-      // Incorrect answer
-      setIsShaking(true); // Start shaking
-      setTimeout(() => setIsShaking(false), 600); // Stop shaking after 600ms
+      // 错误答案的逻辑
+      setIsShaking(true); // 开始抖动
+      setTimeout(() => setIsShaking(false), 600); // 600ms后停止抖动
     }
+    setClickedOption(index); // 设置点击的选项
   };
 
   const renderCardContent = () => {
@@ -145,14 +150,11 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
                   style={{
                     margin: "5px",
                     fontSize: "20px",
-                    backgroundColor:
-                      hoveredOption === index ? "lightblue" : "transparent",
+                    backgroundColor: clickedOption === index ? "lightblue" : "transparent",
                   }}
                   onClick={() => onOptionClick(index)}
-                  onMouseEnter={() => setHoveredOption(index)}
-                  onMouseLeave={() => setHoveredOption(null)}
                 >
-                  {hoveredOption === index ? option : option[0]}
+                  {clickedOption === index ? option : "點按"}
                 </Button>
               ))}
             </div>
@@ -235,7 +237,12 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
       <Button
         variant="contained"
         onClick={handleDrawCard}
-        style={{ marginBottom: "10px" }}
+        style={{ 
+          marginBottom: "10px",
+          fontSize: "1.5em", // Increase font size
+          padding: "15px 30px", // Increase padding
+          color: "white", // Change text color
+        }}
       >
         {deckType} ({cards.length} left)
       </Button>
