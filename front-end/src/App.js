@@ -327,6 +327,36 @@ function App() {
   const resetGame = () => {
     setOpenResetDialog(true); // 打开确认对话框
   };
+
+  // 获取拥有土地的玩家列表
+  const getLandOwners = () => {
+    const owners = new Set();
+    Object.values(landStatus).forEach(land => {
+      if (land.owner) {
+        owners.add(land.owner);
+      }
+    });
+
+    return players.filter(player => owners.has(player.id));
+  };
+
+  // 处理土地抢夺的逻辑
+  const handleLandGrab = (targetPlayerId) => {
+    const targetLandKeys = Object.keys(landStatus).filter(
+      key => landStatus[key].owner === targetPlayerId
+    );
+  
+    if (targetLandKeys.length > 0) {
+      const randomLandKey = targetLandKeys[Math.floor(Math.random() * targetLandKeys.length)];
+      const currentPlayerId = players[currentTurn].id;
+  
+      // 更新土地所有权
+      setLandStatus(prevStatus => ({
+        ...prevStatus,
+        [randomLandKey]: { ...prevStatus[randomLandKey], owner: currentPlayerId }
+      }));
+    }
+  };
   
   return (
     <div className="App">
@@ -429,11 +459,19 @@ function App() {
                   onDraw={handleDrawCard}
                   deckType="問答卡"
                   autoDraw={autoDrawTriviaCard}
+                  getLandOwners={getLandOwners}
+                  onLandGrab={handleLandGrab}
+                  players={players} // 传递当前玩家的 ID
+                  currentTurn={currentTurn}
                 />
                 <CardDeck
                   onDraw={handleDrawCard}
                   deckType="命運卡"
                   autoDraw={autoDrawFateCard}
+                  getLandOwners={getLandOwners}
+                  onLandGrab={handleLandGrab}
+                  players={players} // 传递当前玩家的 ID
+                  currentTurn={currentTurn}
                 />
               </div>
               {/* 右邊的設定區 */}

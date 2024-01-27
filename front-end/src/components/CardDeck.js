@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import QuestionCards from "./util/QuestionCards";
 import FateCards from "./util/FateCards";
 
-function CardDeck({ onDraw, deckType, autoDraw }) {
+function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, players, currentTurn }) {
   const localStorageKey = `${deckType}-cards`;
 
   // Shuffle cards
@@ -38,6 +38,34 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
     localStorage.setItem(localStorageKey, JSON.stringify(cards));
   }, [cards, localStorageKey]);
 
+  // 渲染有土地的玩家列表的函数
+  const renderLandOwners = (selectedCard) => {
+    const landOwners = getLandOwners().filter(player => player.id !== players[currentTurn].id); // 排除当前玩家
+    return (
+      <div>
+        <div>
+          <p style={{ fontSize: "50px" }}>{selectedCard.content}</p>
+          <p style={{ fontSize: "30px" }}>{selectedCard.description}</p>
+        </div>
+        <div>
+          {landOwners.map((player) => (
+            <Button
+              key={player.id}
+              onClick={() => {
+                onLandGrab(player.id); // 抢夺土地
+                setOpen(false); // 关闭对话框
+              }}
+              style={{ fontSize: '20px', padding: '15px 30px', margin: '10px' }} // 調整大小和間距
+            >
+              {player.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+
   // Card drawing logic
   const handleDrawCard = () => {
     if (cards.length > 0 && autoDraw) { // Adjusted condition
@@ -51,6 +79,7 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
       }
     }
   };
+  
 
   // debug
   // const handleDrawCard = () => {
@@ -97,6 +126,10 @@ function CardDeck({ onDraw, deckType, autoDraw }) {
   const renderCardContent = () => {
     if (!selectedCard) {
       return <p>No card</p>;
+    }
+
+    if (deckType === "命運卡" && selectedCard.type === "landGrab") {
+      return renderLandOwners(selectedCard);
     }
 
     if (deckType === "問答卡") {
