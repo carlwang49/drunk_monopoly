@@ -67,23 +67,8 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
   
 
   // Card drawing logic
-  const handleDrawCard = () => {
-    if (cards.length > 0 && autoDraw) { // Adjusted condition
-      const newCards = [...cards];
-      const drawnCard = newCards.shift();
-      setCards(newCards);
-      setSelectedCard(drawnCard);
-      setOpen(true);
-      if (onDraw) {
-        onDraw(drawnCard);
-      }
-    }
-  };
-  
-
-  // debug
   // const handleDrawCard = () => {
-  //   if (cards.length > 0) {
+  //   if (cards.length > 0 && autoDraw) { // Adjusted condition
   //     const newCards = [...cards];
   //     const drawnCard = newCards.shift();
   //     setCards(newCards);
@@ -94,6 +79,21 @@ function CardDeck({ onDraw, deckType, autoDraw, getLandOwners, onLandGrab, playe
   //     }
   //   }
   // };
+  
+
+  // debug
+  const handleDrawCard = () => {
+    if (cards.length > 0) {
+      const newCards = [...cards];
+      const drawnCard = newCards.shift();
+      setCards(newCards);
+      setSelectedCard(drawnCard);
+      setOpen(true);
+      if (onDraw) {
+        onDraw(drawnCard);
+      }
+    }
+  };
 
   useEffect(() => {
     if (autoDraw) {
