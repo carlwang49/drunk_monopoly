@@ -2,6 +2,7 @@ import React from 'react';
 import PlayerToken from "./PlayerToken";
 import "./components_css/HexagonalMap.css";
 import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 import SpecialHexContent from '../land/SpecialHexContent';
 import { getTooltipContent } from './util/tooltipFunctions.js';
 
@@ -47,16 +48,19 @@ function HexagonalMap({ players, landStatus }) {
                   size={hexSize}
                   fillColor={fillColor}
                 />
-                {wineCount > 0 && (
-                  <text 
-                    x={x} 
-                    y={y} 
-                    textAnchor="middle" 
-                    dy=".3em" 
-                    style={{ fill: 'black', fontSize: '30px', fontWeight: 'bold' }}
-                  >
+                {/* 显示进度百分比和进度条 */}
+                {!land?.hideWine && wineCount > 0 && (
+                  <text x={x} y={y} textAnchor="middle" dy=".3em" style={{ fill: 'black', fontSize: '40px', fontWeight: 'bold' }}>
                     {wineCount}
                   </text>
+                )}
+                {land?.showProgress && (
+                  <g transform={`translate(${x - 20}, ${y - 20})`}>
+                    <CircularProgress size={30} />
+                    <text x={20} y={25} textAnchor="middle" style={{ fill: 'black', fontSize: '50px', fontWeight: 'bold' }}>
+                      {land.progress}%
+                    </text>
+                  </g>
                 )}
                 {hex.q === 0 && hex.r === 6 && (
                   <g transform={`translate(${x}, ${y})`}>

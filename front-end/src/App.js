@@ -18,6 +18,9 @@ import {
 } from "@mui/material";
 import MySvgComponent from "./MySvgComponent"; 
 import JailAnimation from './JailAnimation';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+
 
 function App() {
   const initialPlayers = [
@@ -25,8 +28,6 @@ function App() {
     { id: 2, name: "Team 2", position: { q: 0, r: 6 }},
     { id: 3, name: "Team 3", position: { q: 0, r: 6 }},
     { id: 4, name: "Team 4", position: { q: 0, r: 6 }},
-    { id: 5, name: "Team 5", position: { q: 0, r: 6 }},
-    { id: 6, name: "Team 6", position: { q: 0, r: 6 }},
   ];
 
   const [purchasingPlayerId, setPurchasingPlayerId] = useState(null);
@@ -115,12 +116,49 @@ function App() {
   };
 
   const handleDrawCard = (drawnCard) => {
-    console.log("Card drawn:", drawnCard);
-    // Here you can add the logic of what happens when a card is drawn
+    // ...其他代码...
+    if (drawnCard.type === 'priceHike') {
+      const newLandStatus = { ...landStatus };
+      for (const landKey in newLandStatus) {
+        if (newLandStatus[landKey].owner === (currentTurn + 1)) {
+          newLandStatus[landKey].progress = 0;
+          newLandStatus[landKey].showProgress = true;
+          newLandStatus[landKey].hideWine = true; // 隐藏 wine 数量
+          updateProgress(landKey);
+        }
+      }
+      setLandStatus(newLandStatus);
+    }
+  };
+  
+  const updateProgress = (landKey) => {
+    const interval = setInterval(() => {
+      setLandStatus(prevStatus => {
+        const currentProgress = prevStatus[landKey]?.progress || 0;
+        if (currentProgress < 100) {
+          return {
+            ...prevStatus,
+            [landKey]: { ...prevStatus[landKey], progress: currentProgress + 5 },
+          };
+        } else {
+          clearInterval(interval);
+          return {
+            ...prevStatus,
+            [landKey]: {
+              ...prevStatus[landKey],
+              progress: 0,
+              showProgress: false,
+              wine: prevStatus[landKey].wine + 1, // 更新 wine 数量
+              hideWine: false, // 再次显示 wine 数量
+            },
+          };
+        }
+      });
+    }, 300);
   };
 
   const handlePurchaseOption = (option) => {
-    const drinks = ["No thanks !", "one shot", "two shots", "three shots"].indexOf(option);
+    const drinks = ["No thanks !", "1 shot", "2 shots", "3 shots"].indexOf(option);
     if (drinks > 0 && selectedHex) {
       const landKey = `${selectedHex.q},${selectedHex.r}`;
       const currentLand = landStatus[landKey] || {};
@@ -171,6 +209,15 @@ function App() {
     }
   };
   
+  // 控制回合
+  const nextTurn = () => {
+    setCurrentTurn((currentTurn + 1) % players.length);
+  };
+  const previousTurn = () => {
+    setCurrentTurn((currentTurn - 1 + players.length) % players.length);
+  };
+  
+  
 
   // 骰子區
   const handleDiceRoll = (value) => {
@@ -185,7 +232,7 @@ function App() {
       setTimeout(() => {
         setJailedPlayers(prevState => ({ ...prevState, [playerToMove.id]: false }));
         setShowJailAnimation(false); // Make sure to hide the jail animation
-        setCurrentTurn((currentTurn + 1) % players.length); // Move to the next player after animation
+        // setCurrentTurn((currentTurn + 1) % players.length); // Move to the next player after animation
       }, 5000); // Extend the duration to 5 seconds or as needed
   
       return; // Skip the rest of the function
@@ -217,11 +264,11 @@ function App() {
     // 判斷玩家是否移動到特定座標 (0, 6)
     if (newPosition.q === 0 && newPosition.r === 6) {
       console.log("No action at (0, 6)");
-      setCurrentTurn((currentTurn + 1) % players.length);
+      // setCurrentTurn((currentTurn + 1) % players.length);
       return; // 提前返回以避免觸發其他邏輯
     } else if (newPosition.q === 0 && newPosition.r === -6) {
       setJailedPlayers(prevState => ({ ...prevState, [playerToMove.id]: true }));
-      setCurrentTurn((currentTurn + 1) % players.length);
+      // setCurrentTurn((currentTurn + 1) % players.length);
       return
     }
 
@@ -263,7 +310,7 @@ function App() {
       }
     }, 1000);
 
-    setCurrentTurn((currentTurn + 1) % players.length);
+    // setCurrentTurn((currentTurn + 1) % players.length);
   };
 
   const confirmResetGame = () => {
@@ -279,6 +326,36 @@ function App() {
   
   const resetGame = () => {
     setOpenResetDialog(true); // 打开确认对话框
+  };
+
+  // 获取拥有土地的玩家列表
+  const getLandOwners = () => {
+    const owners = new Set();
+    Object.values(landStatus).forEach(land => {
+      if (land.owner) {
+        owners.add(land.owner);
+      }
+    });
+
+    return players.filter(player => owners.has(player.id));
+  };
+
+  // 处理土地抢夺的逻辑
+  const handleLandGrab = (targetPlayerId) => {
+    const targetLandKeys = Object.keys(landStatus).filter(
+      key => landStatus[key].owner === targetPlayerId
+    );
+  
+    if (targetLandKeys.length > 0) {
+      const randomLandKey = targetLandKeys[Math.floor(Math.random() * targetLandKeys.length)];
+      const currentPlayerId = players[currentTurn].id;
+  
+      // 更新土地所有权
+      setLandStatus(prevStatus => ({
+        ...prevStatus,
+        [randomLandKey]: { ...prevStatus[randomLandKey], owner: currentPlayerId }
+      }));
+    }
   };
   
   return (
@@ -309,22 +386,26 @@ function App() {
           <aside className="scoreboard-container">
             <Scoreboard players={players} landStatus={landStatus} currentTurn={currentTurn} />
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-              <DialogTitle>Purchase Land</DialogTitle>
-              <DialogContent>
-                <DialogContentText>Your choice is:</DialogContentText>
-                {["No thanks !", "one shot", "two shots", "three shots"].map((option, index) => (
+            <DialogTitle>Purchase Land</DialogTitle>
+            <DialogContent>
+              <DialogContentText>Your choice is:</DialogContentText>
+              {["No thanks !", "1 shot", "2 shots", "3 shots"].map((option, index) => {
+                // 获取当前土地的wine数量
+                const currentWine = selectedHex ? landStatus[`${selectedHex.q},${selectedHex.r}`]?.wine || 0 : 0;
+                // 根据当前wine数量和选项决定是否禁用
+                const isDisabled = currentWine + index > 3;
+                return (
                   <Button
                     key={index}
                     onClick={() => handlePurchaseOption(option)}
+                    disabled={isDisabled}
                   >
                     {option}
                   </Button>
-                ))}
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setOpenDialog(false)}>取消</Button>
-              </DialogActions>
-            </Dialog>
+                );
+              })}
+            </DialogContent>
+          </Dialog>
           </aside>
           <main className="main-container">
           {showJailAnimation && (
@@ -378,11 +459,19 @@ function App() {
                   onDraw={handleDrawCard}
                   deckType="問答卡"
                   autoDraw={autoDrawTriviaCard}
+                  getLandOwners={getLandOwners}
+                  onLandGrab={handleLandGrab}
+                  players={players} // 传递当前玩家的 ID
+                  currentTurn={currentTurn}
                 />
                 <CardDeck
                   onDraw={handleDrawCard}
                   deckType="命運卡"
                   autoDraw={autoDrawFateCard}
+                  getLandOwners={getLandOwners}
+                  onLandGrab={handleLandGrab}
+                  players={players} // 传递当前玩家的 ID
+                  currentTurn={currentTurn}
                 />
               </div>
               {/* 右邊的設定區 */}
@@ -399,10 +488,39 @@ function App() {
               </Paper>
             </div>
             <div className="dice-roll-container">
+            <div className="dice-and-button-container">
               <Dice onRoll={handleDiceRoll} />
-              <p style={{ fontSize: "3em", fontWeight: "bold", color: "#808080" }}>
-              </p>
+              <div className="button-container">
+                <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "rgba(169,169,169, 0.8)", // 半透明的黑色背景
+                    fontSize: '2em',
+                    fontWeight: 'bold',
+                    padding: '3px'
+                  }} // Black color for the button
+                  onClick={previousTurn}
+                >
+                  <ArrowUpwardIcon style={{ fontSize: '2em', color: 'white' }} /> {/* White color for the icon */}
+                </Button>
+                <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "rgba(169,169,169, 0.8)", // 半透明的黑色背景
+                    fontSize: '2em',
+                    fontWeight: 'bold',
+                    padding: '3px'
+                  }}
+                  onClick={nextTurn}
+                >
+                  <ArrowDownwardIcon style={{ fontSize: '2em', color: 'white' }} /> {/* White color for the icon */}
+                </Button>
+              </div>
             </div>
+            <p style={{ fontSize: "3em", fontWeight: "bold", color: "#808080" }}>
+              {/* Display the current turn here if needed */}
+            </p>
+          </div>
           </main>
         </>
       )}
