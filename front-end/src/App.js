@@ -15,6 +15,7 @@ import {
   DialogContentText,
   DialogTitle,
   Paper,
+  TextField
 } from "@mui/material";
 import MySvgComponent from "./MySvgComponent"; 
 import JailAnimation from './JailAnimation';
@@ -31,6 +32,20 @@ function App() {
   ];
 
   const [purchasingPlayerId, setPurchasingPlayerId] = useState(null);
+
+  // 設定角色名稱
+  const [openNameDialog, setOpenNameDialog] = useState(false);
+  const [newName, setNewName] = useState('');
+  const handleNameChange = () => {
+    setPlayers(players.map((player, index) => {
+      if (index === currentTurn) {
+        return { ...player, name: newName };
+      }
+      return player;
+    }));
+    setOpenNameDialog(false);
+  };
+
 
   // start screen
   const [gameStarted, setGameStarted] = useState(false);
@@ -379,6 +394,33 @@ function App() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Dialog for changing the player's name */}
+      <Dialog open={openNameDialog} onClose={() => setOpenNameDialog(false)}>
+        <DialogTitle>Change Player Name</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Enter a new name for the current player.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenNameDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleNameChange} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
       {!gameStarted ? (
         <StartScreen onStart={startGame} />
       ) : (
@@ -481,6 +523,9 @@ function App() {
                 </Button>
                 <Button variant="contained" onClick={removePlayer}>
                   Remove Player
+                </Button>
+                <Button variant="contained" onClick={() => setOpenNameDialog(true)}>
+                  Change Name
                 </Button>
                 <Button variant="contained" onClick={resetGame}>
                   Reset Game
